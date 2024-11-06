@@ -1,0 +1,64 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © iLLion21
+
+//@version=5
+indicator("My script", overlay = true)
+
+showRsiSignal=input(defval = true,title = "Rsi signal on/off")
+showMacdSignal=input(defval = true,title = "MACD signal on/off")
+showBbSignal=input(defval = true,title = "BB signal on/off")
+showHammerSignal=input(defval = true,title = "Hammer signal on/off")
+
+showIndicator=input(title = "Show indicators",defval = true)
+
+
+
+// Hammer
+hammer=(close>open) and (((open-low)/(close-open))>3) and (high-close)/(open-low)<.5
+plotshape(hammer and showHammerSignal,style = shape.triangleup,location =location.belowbar,text = "Buy",color = color.green,textcolor = color.green)
+
+// EMA
+plot(ta.ema(close, 21),color = color.purple)
+
+
+
+// BB
+[middle, upper, lower] = ta.bb(close, 5, 1.8)
+plot(showIndicator?middle:na, color=color.yellow)
+plot(showIndicator?upper:na, color=color.yellow)
+plot(showIndicator?lower:na, color=color.yellow)
+
+bbSellCondition=close>upper
+bbBuyCondition=close<lower
+plotshape(bbSellCondition and showBbSignal,style = shape.circle)
+plotshape(bbBuyCondition and showBbSignal,style = shape.circle)
+
+
+// MACD
+[macdLine, signalLine, histLine] = ta.macd(close, 12, 26, 9)
+plot(showIndicator?macdLine:na, color=color.blue)
+plot(showIndicator?signalLine:na, color=color.orange)
+plot(showIndicator?histLine:na, color=color.red, style=plot.style_histogram)
+
+macdBuyCondition=ta.crossover(macdLine,signalLine) and histLine>0
+macdSellCondition=ta.crossunder(macdLine,signalLine) and histLine<0
+plotshape(macdBuyCondition and showMacdSignal)
+plotshape(macdSellCondition and showMacdSignal)
+
+
+// RSI
+rsiValue=ta.rsi(close, 7)
+plot(showIndicator?rsiValue:na)
+
+rsiBuyCondition=ta.crossover(rsiValue, 30)
+rsiSellCondition=ta.crossunder(rsiValue, 70)
+
+plotshape(rsiBuyCondition and showRsiSignal,style = shape.triangleup,location = location.belowbar,text = "Rsi Buy", textcolor = color.green, color = color.green)
+plotshape(rsiSellCondition and showRsiSignal,style = shape.triangledown,location = location.abovebar,text = "Rsi Sell", textcolor = color.red, color = color.red)
+
+
+sellAlert=rsiSellCondition or macdSellCondition or bbSellCondition
+alertcondition(sellAlert,title = "Sell multi indicator strategy",message = "rsi/macd/bb sell condition triggered")
+
+buyAlert=rsiBuyCondition or macdBuyCondition or bbBuyCondition
+alertcondition(sellAlert,title = "Buy multi indicator strategy",message = "rsi/macd/bb buy condition triggered")
