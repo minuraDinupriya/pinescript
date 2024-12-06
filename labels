@@ -1,0 +1,4 @@
+//@version=4
+study("label",overlay = true)
+i=input("")
+label.new(bar_index,high, text=i)
