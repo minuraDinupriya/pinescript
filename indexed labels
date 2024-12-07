@@ -1,0 +1,6 @@
+//@version=4
+study("label",overlay = true)
+if barstate.isrealtime
+    label.new(x = 160,y = high)
+
+plot(bar_index, title = "barIndex")
